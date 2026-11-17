@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { getCliPath, readFile, writeFileAtomic } from "../lib/rust-handlers";
+	import Editor from "$lib/components/Editor.svelte";
 
 	let text = $state("");
 	let path = $state<string | null>(null);
@@ -44,7 +45,7 @@
 
 <main>
 	<div class="status">{path ?? "[scratch]"}</div>
-	<textarea bind:value={text} spellcheck="false"></textarea>
+	<Editor bind:value={text} />
 	<pre>{text}</pre>
 </main>
 
@@ -64,7 +65,6 @@
 		border-bottom: 1px solid var(--border);
 	}
 
-	textarea,
 	pre {
 		margin: 0;
 		padding: 1rem;

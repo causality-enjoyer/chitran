@@ -4,6 +4,9 @@
   --fg: #1c1917;
   --muted: #78716c;
   --border: #d6d3d1;
+
+  --selection: rgba(59, 130, 246, 0.25);
+  --cursor: #1c1917;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -12,6 +15,9 @@
     --fg: #e7e5e4;
     --muted: #a8a29e;
     --border: #3a3633;
+
+    --selection: rgba(96, 165, 250, 0.1);
+    --cursor: rgba(231, 229, 228, 0.5);
   }
 }
 

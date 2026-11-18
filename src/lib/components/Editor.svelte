@@ -1,12 +1,25 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { EditorState, Transaction } from "@codemirror/state";
+	import { EditorState } from "@codemirror/state";
 	import { drawSelection, EditorView, keymap } from "@codemirror/view";
 	import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 	import { markdown } from "@codemirror/lang-markdown";
 	import { Vim, vim } from "@replit/codemirror-vim";
+	import { parse } from "$lib/helpers";
 
-	let { value = $bindable(""), disabled = false } = $props();
+	let {
+		value = $bindable(""),
+		disabled = false,
+		onWrite,
+		onQuit,
+		onOpen,
+	}: {
+		value?: string;
+		disabled?: boolean;
+		onWrite?: (name?: string, force?: boolean) => void;
+		onQuit?: (force?: boolean) => void;
+		onOpen?: (name?: string, force?: boolean) => void;
+	} = $props();
 
 	let host: HTMLDivElement | undefined;
 	let view: EditorView | undefined;
@@ -17,35 +30,57 @@
 		Vim.map("<C-k>", "<Up>", "insert");
 		Vim.map("<C-l>", "<Right>", "insert");
 		Vim.map("<C-o>", "<Esc>o", "insert");
+		Vim.defineEx("quit", "q", (_cm: unknown, p: any) =>
+			onQuit?.(parse(p).force),
+		);
+		Vim.defineEx("open", "o", (_cm: unknown, p: any) => {
+			const { arg, force } = parse(p);
+			if (arg) onOpen?.(arg, force);
+		});
+		Vim.defineEx("edit", "e", (_cm: unknown, p: any) => {
+			const { arg, force } = parse(p);
+			if (arg) onOpen?.(arg, force);
+		});
+		Vim.defineEx("write", "w", (_cm: unknown, params: any) => {
+			const raw: string = (
+				params.argString ??
+				params.args?.join(" ") ??
+				""
+			).trim();
+			const force = raw.startsWith("!") || params.bang === true;
+			const name = raw.replace(/^!/, "").trim() || undefined;
+			onWrite?.(name, force);
+		});
 		view = new EditorView({
 			parent: host,
-			state: EditorState.create({
-				doc: value,
-				extensions: [
-					vim(),
-					drawSelection(),
-					history(),
-					keymap.of([...defaultKeymap, ...historyKeymap]),
-					markdown(),
-					EditorView.lineWrapping,
-					EditorView.updateListener.of((u) => {
-						if (u.docChanged) value = u.state.doc.toString();
-					}),
-				],
-			}),
+			state: makeState(value),
 		});
 
 		return () => view?.destroy();
 	});
 
+	function makeState(doc: string) {
+		return EditorState.create({
+			doc,
+			extensions: [
+				vim(),
+				drawSelection(),
+				history(),
+				keymap.of([...defaultKeymap, ...historyKeymap]),
+				markdown(),
+				EditorView.lineWrapping,
+				EditorView.updateListener.of((u) => {
+					if (u.docChanged) value = u.state.doc.toString();
+				}),
+			],
+		});
+	}
+
 	$effect(() => {
 		const incoming = value;
 		if (!view) return;
 		if (incoming !== view.state.doc.toString()) {
-			view.dispatch({
-				changes: { from: 0, to: view.state.doc.length, insert: incoming },
-				annotations: Transaction.addToHistory.of(false),
-			});
+			view.setState(makeState(incoming));
 		}
 	});
 </script>
@@ -79,5 +114,28 @@
 	.editor :global(.cm-selectionBackground),
 	.editor :global(.cm-focused .cm-selectionBackground) {
 		background: var(--selection) !important;
+	}
+
+	.editor :global(.cm-panels) {
+		background: var(--bg);
+		color: var(--fg);
+		border-color: var(--border);
+	}
+	.editor :global(.cm-panels-bottom) {
+		border-top: 1px solid var(--border);
+	}
+	.editor :global(.cm-vim-panel) {
+		padding: 2px 8px;
+		font-family: monospace;
+		font-size: 14px;
+		color: var(--fg);
+	}
+	.editor :global(.cm-vim-panel input) {
+		background: transparent;
+		color: var(--fg);
+		border: none;
+		outline: none;
+		font: inherit;
+		caret-color: var(--cursor);
 	}
 </style>

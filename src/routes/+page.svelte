@@ -139,7 +139,6 @@
 			console.error("An error occurred: ", e instanceof Error ? e.message : e);
 		} finally {
 			ready = true;
-			console.log("ready at", performance.now());
 		}
 		lastSaved = text;
 	}

@@ -9,13 +9,11 @@
 
 	let {
 		value = $bindable(""),
-		disabled = false,
 		onWrite,
 		onQuit,
 		onOpen,
 	}: {
 		value?: string;
-		disabled?: boolean;
 		onWrite?: (name?: string, force?: boolean) => void;
 		onQuit?: (force?: boolean) => void;
 		onOpen?: (name?: string, force?: boolean) => void;

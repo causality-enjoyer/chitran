@@ -8,26 +8,12 @@
 		writeFileAtomic,
 	} from "../lib/rust-handlers";
 	import Editor from "$lib/components/Editor.svelte";
+	import { LAYOUTS, layoutStore } from "$lib/stores/layout.svelte";
 
 	let text = $state("");
 	let path = $state<string | null>(null);
 	let ready = $state(false);
 	let lastSaved = $state("");
-
-	async function openInitial() {
-		try {
-			path = await getCliPath();
-			if (path !== null) {
-				text = (await readFile(path)) ?? "";
-			}
-		} catch (e) {
-			console.error("An error occurred: ", e instanceof Error ? e.message : e);
-		} finally {
-			ready = true;
-			console.log("ready at", performance.now());
-		}
-		lastSaved = text;
-	}
 
 	async function handleWrite(name?: string, force = false) {
 		let contents = text; // snapshot, so typing during the write can't mismatch lastSaved
@@ -118,6 +104,14 @@
 		}
 	}
 
+	function onkeydown(e: KeyboardEvent) {
+		if (e.metaKey || e.altKey) return;
+		if (e.ctrlKey && e.code === "Backslash") {
+			e.preventDefault();
+			layoutStore.cycle();
+		}
+	}
+
 	$effect(() => {
 		const current = text;
 		const target = path;
@@ -135,26 +129,73 @@
 		return () => clearTimeout(timer);
 	});
 
+	async function openInitial() {
+		try {
+			path = await getCliPath();
+			if (path !== null) {
+				text = (await readFile(path)) ?? "";
+			}
+		} catch (e) {
+			console.error("An error occurred: ", e instanceof Error ? e.message : e);
+		} finally {
+			ready = true;
+			console.log("ready at", performance.now());
+		}
+		lastSaved = text;
+	}
+
 	onMount(openInitial);
+	onMount(() => {
+		window.addEventListener("keydown", onkeydown, true);
+		return () => window.removeEventListener("keydown", onkeydown, true);
+	});
 </script>
 
-<main>
-	<div class="status">{path ?? "[scratch]"}</div>
-	<Editor
-		bind:value={text}
-		onWrite={handleWrite}
-		onOpen={handleOpen}
-		onQuit={handleQuit}
-	/>
+<main data-layout={layoutStore.id}>
+	<div class="status">
+		<span>
+			{path ?? "[scratch]"}
+		</span>
+
+		<button onclick={() => layoutStore.cycle()}>{layoutStore.id}</button>
+	</div>
+
+	<div class="pane-editor">
+		<Editor
+			bind:value={text}
+			onWrite={handleWrite}
+			onOpen={handleOpen}
+			onQuit={handleQuit}
+		/>
+	</div>
 	<pre>{text}</pre>
 </main>
 
 <style>
 	main {
 		display: grid;
+		height: 100vh;
+	}
+	main[data-layout="side"] {
 		grid-template-columns: 1fr 1fr;
 		grid-template-rows: auto 1fr;
-		height: 100vh;
+	}
+	main[data-layout="stacked"] {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr 1fr;
+	}
+	main[data-layout="editor"] {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr;
+	}
+	main[data-layout="preview"] {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr;
+	}
+
+	.pane-editor {
+		min-height: 0;
+		min-width: 0;
 	}
 
 	.status {
@@ -163,6 +204,17 @@
 		font-size: 14px;
 		color: var(--muted);
 		border-bottom: 1px solid var(--border);
+	}
+
+	main[data-layout="editor"] pre {
+		display: none;
+	}
+	main[data-layout="stacked"] pre {
+		border-left: none;
+		border-top: 1px solid var(--border);
+	}
+	main[data-layout="preview"] .pane-editor {
+		display: none;
 	}
 
 	pre {

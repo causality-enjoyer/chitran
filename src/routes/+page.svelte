@@ -8,12 +8,18 @@
 		writeFileAtomic,
 	} from "../lib/rust-handlers";
 	import Editor from "$lib/components/Editor.svelte";
-	import { LAYOUTS, layoutStore } from "$lib/stores/layout.svelte";
+	import { layoutStore } from "$lib/stores/layout.svelte";
+	import MarkdownWorker from "$lib/workers/markdown.worker?worker";
 
 	let text = $state("");
 	let path = $state<string | null>(null);
 	let ready = $state(false);
 	let lastSaved = $state("");
+
+	// new states for remark plugins
+	let html = $state("");
+	let worker = $state.raw<Worker>();
+	let requestId = 0;
 
 	async function handleWrite(name?: string, force = false) {
 		let contents = text; // snapshot, so typing during the write can't mismatch lastSaved
@@ -107,9 +113,24 @@
 	function onkeydown(e: KeyboardEvent) {
 		if (e.metaKey || e.altKey) return;
 		if (e.ctrlKey && e.code === "Backslash") {
+			console.log("key entered");
 			e.preventDefault();
 			layoutStore.cycle();
 		}
+	}
+
+	async function openInitial() {
+		try {
+			path = await getCliPath();
+			if (path !== null) {
+				text = (await readFile(path)) ?? "";
+			}
+		} catch (e) {
+			console.error("An error occurred: ", e instanceof Error ? e.message : e);
+		} finally {
+			ready = true;
+		}
+		lastSaved = text;
 	}
 
 	$effect(() => {
@@ -129,24 +150,36 @@
 		return () => clearTimeout(timer);
 	});
 
-	async function openInitial() {
-		try {
-			path = await getCliPath();
-			if (path !== null) {
-				text = (await readFile(path)) ?? "";
-			}
-		} catch (e) {
-			console.error("An error occurred: ", e instanceof Error ? e.message : e);
-		} finally {
-			ready = true;
-		}
-		lastSaved = text;
-	}
+	$effect(() => {
+		const current = text;
+		const w = worker;
+		if (!w) return; // worker not ready yet; effect re-runs when it is
+
+		const timer = setTimeout(() => {
+			w.postMessage({ id: ++requestId, text: current });
+			console.log("posting", requestId + 1, current.length);
+		}, 120);
+
+		return () => clearTimeout(timer);
+	});
 
 	onMount(openInitial);
 	onMount(() => {
 		window.addEventListener("keydown", onkeydown, true);
 		return () => window.removeEventListener("keydown", onkeydown, true);
+	});
+	onMount(() => {
+		const w = new MarkdownWorker();
+		w.onmessage = (
+			e: MessageEvent<{ id: number; html?: string; error?: string }>,
+		) => {
+			console.log("reply", e.data);
+			if (e.data.id !== requestId) return; // reply to an outdated request, ignore it
+			if (e.data.html !== undefined) html = e.data.html;
+			else console.error("Markdown render failed:", e.data.error);
+		};
+		worker = w;
+		return () => w.terminate();
 	});
 </script>
 
@@ -167,7 +200,8 @@
 			onQuit={handleQuit}
 		/>
 	</div>
-	<pre>{text}</pre>
+
+	<div class="preview">{@html html}</div>
 </main>
 
 <style>
@@ -205,10 +239,10 @@
 		border-bottom: 1px solid var(--border);
 	}
 
-	main[data-layout="editor"] pre {
+	main[data-layout="editor"] .preview {
 		display: none;
 	}
-	main[data-layout="stacked"] pre {
+	main[data-layout="stacked"] .preview {
 		border-left: none;
 		border-top: 1px solid var(--border);
 	}
@@ -216,20 +250,13 @@
 		display: none;
 	}
 
-	pre {
+	.preview {
 		margin: 0;
 		padding: 1rem;
 		overflow: auto;
-		font-family: monospace;
 		font-size: 14px;
 		box-sizing: border-box;
 		border: none;
-		outline: none;
-		resize: none;
-	}
-
-	pre {
 		border-left: 1px solid var(--border);
-		white-space: pre-wrap;
 	}
 </style>

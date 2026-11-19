@@ -157,7 +157,6 @@
 
 		const timer = setTimeout(() => {
 			w.postMessage({ id: ++requestId, text: current });
-			console.log("posting", requestId + 1, current.length);
 		}, 120);
 
 		return () => clearTimeout(timer);
@@ -173,7 +172,6 @@
 		w.onmessage = (
 			e: MessageEvent<{ id: number; html?: string; error?: string }>,
 		) => {
-			console.log("reply", e.data);
 			if (e.data.id !== requestId) return; // reply to an outdated request, ignore it
 			if (e.data.html !== undefined) html = e.data.html;
 			else console.error("Markdown render failed:", e.data.error);

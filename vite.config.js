@@ -15,6 +15,10 @@ const decodeNoDom = createRequire(import.meta.url).resolve(
 export default defineConfig({
   plugins: [sveltekit()],
   resolve: {
+    // had to include alias because
+    // dococde-named-character-reference ships a DOM-based build under `browser` condition
+    // vite bundled this into the worker
+    // and the alias forces the DOM-free build.
     alias: [
       { find: /^decode-named-character-reference$/, replacement: decodeNoDom },
     ],

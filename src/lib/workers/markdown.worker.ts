@@ -5,10 +5,54 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import type { Root as HastRoot, Element } from "hast";
+
+const BLOCKS = new Set([
+  "p",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "pre",
+  "ul",
+  "ol",
+  "li",
+  "hr",
+  "table",
+  "blockquote",
+]);
 
 // plugin: (helper) removes YAML node so that it doesn't reach the HTML
 const stripFrontmatter: Plugin<[], Root> = () => (tree) => {
   tree.children = tree.children.filter((n) => n.type !== "yaml");
+};
+
+// copy each block's starting sourc eline into a data attribute
+// positions: relative to the whole file (we parse the whole file)
+// frontmatter is included, so no offset
+const addSourceLines: Plugin<[], HastRoot> = () => (tree) => {
+  const walk = (node: HastRoot | Element) => {
+    for (const child of node.children) {
+      if (child.type !== "element") continue;
+      if (BLOCKS.has(child.tagName) && child.position) {
+        child.properties.dataSourceLine = child.position.start.line;
+      }
+      walk(child);
+    }
+  };
+  walk(tree);
+};
+
+// same allow-list github uses, plus our attribute
+const schema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    "*": [...(defaultSchema.attributes?.["*"] ?? []), "dataSourceLine"],
+  },
 };
 
 // built once, when the worker starts
@@ -18,6 +62,8 @@ const processor = unified()
   .use(remarkGfm)
   .use(stripFrontmatter)
   .use(remarkRehype)
+  .use(addSourceLines)
+  .use(rehypeSanitize, schema)
   .use(rehypeStringify);
 
 type Request = { id: number; text: string };

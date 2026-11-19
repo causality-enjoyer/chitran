@@ -12,15 +12,18 @@
 		onWrite,
 		onQuit,
 		onOpen,
+		onCursor,
 	}: {
 		value?: string;
 		onWrite?: (name?: string, force?: boolean) => void;
 		onQuit?: (force?: boolean) => void;
 		onOpen?: (name?: string, force?: boolean) => void;
+		onCursor?: (line: number) => void;
 	} = $props();
 
 	let host: HTMLDivElement | undefined;
 	let view: EditorView | undefined;
+	let lastLine = 0;
 
 	onMount(() => {
 		Vim.map("<C-h>", "<Left>", "insert");
@@ -69,6 +72,13 @@
 				EditorView.lineWrapping,
 				EditorView.updateListener.of((u) => {
 					if (u.docChanged) value = u.state.doc.toString();
+					if (u.selectionSet || u.docChanged) {
+						const line = u.state.doc.lineAt(u.state.selection.main.head).number;
+						if (line !== lastLine) {
+							lastLine = line;
+							onCursor?.(line);
+						}
+					}
 				}),
 			],
 		});

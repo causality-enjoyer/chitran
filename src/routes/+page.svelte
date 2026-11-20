@@ -5,6 +5,7 @@
 	import { buffer } from "$lib/stores/buffer.svelte";
 	import { renderer } from "$lib/stores/markdown.svelte";
 	import { layoutStore } from "$lib/stores/layout.svelte";
+	import { config } from "$lib/stores/config.svelte";
 
 	let cursorLine = $state(1);
 
@@ -24,7 +25,9 @@
 		window.addEventListener("keydown", onkeydown, true);
 		return () => window.removeEventListener("keydown", onkeydown, true);
 	});
-	$inspect(renderer.tree);
+	onMount(() => {
+		void config.load();
+	});
 </script>
 
 <main data-layout={layoutStore.id}>
@@ -46,7 +49,12 @@
 	</div>
 
 	<div class="pane-preview">
-		<Preview html={renderer.html} {cursorLine} />
+		<Preview
+			html={renderer.html}
+			{cursorLine}
+			path={buffer.path}
+			remoteImages={config.value.remoteImages}
+		/>
 	</div>
 </main>
 

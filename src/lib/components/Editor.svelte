@@ -105,7 +105,7 @@
 	}
 	.editor :global(.cm-scroller) {
 		overflow: auto;
-		font-family: monospace;
+		font-family: var(--font-mono);
 		font-size: 14px;
 	}
 	.editor :global(.cm-editor.cm-focused) {

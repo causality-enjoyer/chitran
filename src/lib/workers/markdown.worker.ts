@@ -7,6 +7,7 @@ import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { Root as HastRoot, Element } from "hast";
+import { buildSectionTree } from "$lib/section-tree";
 
 const BLOCKS = new Set([
   "p",
@@ -71,9 +72,9 @@ type Request = { id: number; text: string };
 self.onmessage = async (e: MessageEvent<Request>) => {
   const { id, text } = e.data;
   try {
-    console.log("message  received");
     const file = await processor.process(text);
-    self.postMessage({ id, html: String(file) });
+    const tree = buildSectionTree(text);
+    self.postMessage({ id, html: String(file), tree });
   } catch (err) {
     self.postMessage({ id, error: String(err) });
   }

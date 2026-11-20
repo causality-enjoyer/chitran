@@ -24,11 +24,13 @@
 		window.addEventListener("keydown", onkeydown, true);
 		return () => window.removeEventListener("keydown", onkeydown, true);
 	});
+	$inspect(renderer.tree);
 </script>
 
 <main data-layout={layoutStore.id}>
 	<div class="status">
 		<span> {buffer.path ?? "[scratch]"} </span>
+		<span> {renderer.tree?.children.length ?? 0} top-level sections </span>
 
 		<button onclick={() => layoutStore.cycle()}>{layoutStore.id}</button>
 	</div>

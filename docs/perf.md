@@ -23,6 +23,13 @@ At v1d the AppImage was also built, at 106 MB.
 | v2b: sanitize + cursor sync | 6.3 MB | 2.7 MB | 2.7 MB | instant |
 
 AppImage: 106 MB at v2a and v2b (last time it was tracked).
+## V3
+
+| Version | Binary | .deb | .rpm | Cold start |
+|---------|--------|------|------|------------|
+| v3a: markdown worker | 6.3 MB | 2.7 MB | 2.7 MB | instant (back to lightning fast) |
+
+
 
 ## Frontend chunks (from `pnpm build`)
 
@@ -32,6 +39,7 @@ AppImage: 106 MB at v2a and v2b (last time it was tracked).
 | v1b (CM6 + vim) | not recorded | not recorded | n/a |
 | v2a: markdown worker | 659.48 kB | 223.91 kB | 201.62 kB |
 | v2b: sanitize + cursor sync | 660.60 kB | 224.11 kB | 206.93 kB |
+| v3a: section tree build | 660.60 kB | 224.11 kB | 206.93 kB |
 
 Notes:
 - The main chunk jump from v1a to v2a covers vim plus everything added through

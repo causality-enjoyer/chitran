@@ -27,7 +27,8 @@ AppImage: 106 MB at v2a and v2b (last time it was tracked).
 
 | Version | Binary | .deb | .rpm | Cold start |
 |---------|--------|------|------|------------|
-| v3a: markdown worker | 6.3 MB | 2.7 MB | 2.7 MB | instant (back to lightning fast) |
+| v3a: section tree build | 6.3 MB | 2.7 MB | 2.7 MB | instant (back to lightning fast) |
+| v3b: section tree exposed | 6.3 MB | 2.7 MB | 2.7 MB | instant (back to lightning fast) |
 
 
 
@@ -40,6 +41,7 @@ AppImage: 106 MB at v2a and v2b (last time it was tracked).
 | v2a: markdown worker | 659.48 kB | 223.91 kB | 201.62 kB |
 | v2b: sanitize + cursor sync | 660.60 kB | 224.11 kB | 206.93 kB |
 | v3a: section tree build | 660.60 kB | 224.11 kB | 206.93 kB |
+| v3b: section tree exposed | 660.79 kB | 224.18 kB | 208.06 kB |
 
 Notes:
 - The main chunk jump from v1a to v2a covers vim plus everything added through

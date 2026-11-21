@@ -370,4 +370,39 @@
 		background: none;
 		border-radius: 0;
 	}
+
+	.prose :global(.callout) {
+		--c: var(--accent);
+		margin: 0 0 1.1em;
+		padding: 0.8em 1em;
+		border-left: 3px solid var(--c);
+		border-radius: 0 6px 6px 0;
+		background: color-mix(in srgb, var(--c) 9%, transparent);
+	}
+	.prose :global(.callout-note) {
+		--c: var(--callout-note);
+	}
+	.prose :global(.callout-tip) {
+		--c: var(--callout-tip);
+	}
+	.prose :global(.callout-important) {
+		--c: var(--callout-important);
+	}
+	.prose :global(.callout-warning) {
+		--c: var(--callout-warning);
+	}
+	.prose :global(.callout-caution) {
+		--c: var(--callout-caution);
+	}
+	.prose :global(.callout-title) {
+		font-weight: 600;
+		font-size: 0.85em;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--c);
+		margin-bottom: 0.35em;
+	}
+	.prose :global(.callout-body > :last-child) {
+		margin-bottom: 0;
+	}
 </style>

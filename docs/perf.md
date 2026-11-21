@@ -35,7 +35,8 @@ AppImage: 106 MB at v2a and v2b (last time it was tracked).
 | Version | Binary | .deb | .rpm | Cold start |
 |---------|--------|------|------|------------|
 | v4a: config store, images and paper style | 6.4 MB | 2.8 MB | 2.8 MB | instant app/window spawn, but render (images/heading) takes noticable few 100 ms (definitely less than 1s) |
-| v4b: Shiki code blocks, copy button, local grammars | 6.6 MB | 2.9 MB | 2.9 MB | instant spawn, render takes some few 100 ms |
+| v4b: Shiki code blocks, copy button, local grammars | 6.6 MB | 2.9 MB | 2.9 MB | instant spawn, render takes some few 100 ms. But not applied in pure text md, they are instant spawn and render. |
+| v4c: callouts (note, tip, important, warning, caution) | 6.6 MB | 2.9 MB | 2.9 MB | Same as above |
 
 ## Frontend chunks (from `pnpm build`)
 
@@ -47,8 +48,12 @@ AppImage: 106 MB at v2a and v2b (last time it was tracked).
 | v2b: sanitize + cursor sync | 660.60 kB | 224.11 kB | 206.93 kB |
 | v3a: section tree build | 660.60 kB | 224.11 kB | 206.93 kB |
 | v3b: section tree exposed | 660.79 kB | 224.18 kB | 208.06 kB |
-| v4a: config store, images and paper style | 663.93 kB | 225.31 kB | 208.86 kB |
-| v4b: Shiki code blocks, copy button, local grammars | 663.93 kB | 225.31 kB | 347.91 kB | ~1,500 kB (13 files) |
+
+| Version | Main (raw) | Main (gzip) | Worker entry (raw) | Worker lazy chunks (sum) |
+|---------|-----------|-------------|--------------------|--------------------------|
+| v4a: config store, images and paper style | 663.93 kB | 225.31 kB | 208.86 kB | n/a |
+| v4b: Shiki code blocks, copy button, local grammars | 663.93 kB | 225.31 kB | 347.91 kB | ~1,430 kB (13 files) |
+| v4c: callouts (note, tip, important, warning, caution) | 663.93 kB | 225.31 kB | 349.01 kB | ~1,440 kB (13 files) |
 
 Notes:
 - The main chunk jump from v1a to v2a covers vim plus everything added through

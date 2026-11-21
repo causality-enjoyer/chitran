@@ -25,6 +25,12 @@
   --syn-function: #2f5f8a;
   --syn-constant: #9a6a1f;
   --syn-param: #6b5a8a;
+
+  --callout-note: #3f6f9a;
+  --callout-tip: #4f7a3a;
+  --callout-important: #7a5a9a;
+  --callout-warning: #a8741f;
+  --callout-caution: #a8402f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,6 +52,12 @@
     --syn-function: #7fa8d1;
     --syn-constant: #d9a860;
     --syn-param: #b79ad6;
+
+    --callout-note: #7fa8d1;
+    --callout-tip: #a3c283;
+    --callout-important: #b79ad6;
+    --callout-warning: #d9a860;
+    --callout-caution: #e08a78;
   }
 }
 

@@ -9,6 +9,7 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { Root as HastRoot, Element } from "hast";
 import { buildSectionTree } from "$lib/section-tree";
 import { addGrammar, highlightBlocks } from "./code-blocks";
+import { callouts } from "./callouts";
 
 const BLOCKS = new Set([
   "p",
@@ -54,6 +55,13 @@ const schema = {
   attributes: {
     ...defaultSchema.attributes,
     "*": [...(defaultSchema.attributes?.["*"] ?? []), "dataSourceLine"],
+    div: [
+      ...(defaultSchema.attributes?.div ?? []),
+      [
+        "className",
+        /^callout(-title|-body|-(note|tip|important|warning|caution))?$/,
+      ] as [string, RegExp],
+    ],
   },
 };
 
@@ -65,6 +73,7 @@ const processor = unified()
   .use(stripFrontmatter)
   .use(remarkRehype)
   .use(addSourceLines)
+  .use(callouts)
   .use(rehypeSanitize, schema)
   .use(highlightBlocks)
   .use(rehypeStringify);

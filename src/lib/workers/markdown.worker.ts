@@ -1,4 +1,4 @@
-import { unified, type Plugin } from "unified";
+import { unified, type Plugin, type PluggableList } from "unified";
 import type { Root } from "mdast";
 import remarkParse from "remark-parse";
 import remarkFrontmatter from "remark-frontmatter";
@@ -10,6 +10,7 @@ import type { Root as HastRoot, Element } from "hast";
 import { buildSectionTree } from "$lib/section-tree";
 import { addGrammar, highlightBlocks } from "./code-blocks";
 import { callouts } from "./callouts";
+import { renderMath } from "./math";
 
 const BLOCKS = new Set([
   "p",
@@ -62,21 +63,44 @@ const schema = {
         /^callout(-title|-body|-(note|tip|important|warning|caution))?$/,
       ] as [string, RegExp],
     ],
+    code: [
+      ["className", /^language-./, "math-inline", "math-display"] as [
+        string,
+        RegExp,
+        string,
+        string,
+      ],
+    ],
   },
 };
 
-// built once, when the worker starts
-const processor = unified()
-  .use(remarkParse)
-  .use(remarkFrontmatter, ["yaml"])
-  .use(remarkGfm)
-  .use(stripFrontmatter)
-  .use(remarkRehype)
-  .use(addSourceLines)
-  .use(callouts)
-  .use(rehypeSanitize, schema)
-  .use(highlightBlocks)
-  .use(rehypeStringify);
+function build(remarkExtra: PluggableList, rehypeExtra: PluggableList) {
+  return (
+    unified()
+      .use(remarkParse)
+      .use(remarkFrontmatter, ["yaml"])
+      .use(remarkGfm)
+      .use(remarkExtra)
+      .use(stripFrontmatter)
+      .use(remarkRehype)
+      .use(addSourceLines)
+      .use(callouts)
+      .use(rehypeSanitize, schema)
+      .use(highlightBlocks)
+      // v5a: .use(nestSections) goes here, after highlightBlocks
+      .use(rehypeExtra) // math, last
+      .use(rehypeStringify, { allowDangerousHtml: true })
+  );
+}
+
+const plain = build([], []);
+
+// remark-math is only fetcheed the first time a note contains "$"
+let withMath: Promise<ReturnType<typeof build>> | null = null;
+const mathProcessor = () =>
+  (withMath ??= import("remark-math").then((m) =>
+    build([m.default], [renderMath]),
+  ));
 
 type Request =
   | { id: number; text: string }
@@ -94,7 +118,8 @@ async function handle(msg: Request) {
     return;
   }
   try {
-    const file = await processor.process(msg.text);
+    const proc = msg.text.includes("$") ? await mathProcessor() : plain;
+    const file = await proc.process(msg.text);
     self.postMessage({
       id: msg.id,
       html: String(file),

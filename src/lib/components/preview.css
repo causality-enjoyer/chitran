@@ -1,0 +1,308 @@
+/* Reading column: 68ch is ~65–75 chars per line.
+   Content from {@html} is not scoped by Svelte, so all selectors are global
+   by virtue of living in this external file. */
+.preview {
+  height: 100%;
+  overflow: auto;
+  padding: 2rem 1.5rem 4rem;
+  box-sizing: border-box;
+}
+
+.prose {
+  --shiki-foreground: var(--fg);
+  --shiki-background: transparent;
+  --shiki-token-comment: var(--muted);
+  --shiki-token-keyword: var(--accent);
+  --shiki-token-string: var(--syn-string);
+  --shiki-token-string-expression: var(--syn-string);
+  --shiki-token-function: var(--syn-function);
+  --shiki-token-constant: var(--syn-constant);
+  --shiki-token-parameter: var(--syn-param);
+  --shiki-token-punctuation: var(--muted);
+  --shiki-token-link: var(--accent);
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+
+/* Vertical rhythm */
+.prose p,
+.prose ul,
+.prose ol,
+.prose blockquote,
+.prose pre,
+.prose table {
+  margin: 0 0 1.1em;
+}
+
+/* Headings */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 2em 0 0.55em;
+  text-wrap: pretty;
+}
+.prose h1 {
+  font-size: 2.05em;
+  font-weight: 700;
+  margin-top: 1.4em;
+}
+.prose h2 {
+  font-size: 1.6em;
+}
+.prose h3 {
+  font-size: 1.28em;
+}
+.prose h4 {
+  font-size: 1.08em;
+}
+.prose h5,
+.prose h6 {
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+/* Links */
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.prose a:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* Lists */
+.prose ul,
+.prose ol {
+  padding-left: 1.5em;
+}
+.prose li {
+  margin: 0.25em 0;
+}
+.prose li > ul,
+.prose li > ol {
+  margin: 0.25em 0 0;
+}
+.prose li::marker {
+  color: var(--muted);
+}
+
+.prose .contains-task-list {
+  list-style: none;
+  padding-left: 0.25em;
+}
+.prose .task-list-item input {
+  margin: 0 0 0.5em 0 0;
+  accent-color: var(--accent);
+  vertical-align: -0.1em;
+}
+
+/* Blockquote */
+.prose blockquote {
+  padding: 0.1em 0 0.1em 1.1em;
+  border-left: 3px solid var(--border);
+  color: color-mix(in srgb, var(--fg) 78%, var(--bg));
+}
+.prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* Code */
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+.prose :not(pre) > code {
+  background: var(--code-bg);
+  padding: 0.12em 0.4em;
+  border-radius: 4px;
+}
+.prose pre {
+  background: var(--code-bg);
+  border-radius: 8px;
+  padding: 1em 1.15rem;
+  overflow-x: auto;
+  line-height: 1.55;
+  hyphens: none;
+}
+.prose pre code {
+  font-size: 0.85em;
+  background: none;
+  padding: 0;
+}
+
+/* Tables */
+.prose table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.94em;
+  line-height: 1.5;
+  hyphens: none;
+}
+.prose th,
+.prose td {
+  padding: 0.55em 0.9em;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.prose th {
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+}
+.prose tbody tr:nth-child(even) {
+  background: var(--stripe);
+}
+
+/* Rule, emphasis, images */
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.2em 0;
+}
+.prose strong {
+  font-weight: 700;
+}
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: none;
+}
+
+/* Footnotes */
+.prose section[data-footnotes] {
+  margin-top: 3em;
+  padding-top: 1em;
+  border-top: 1px solid var(--border);
+  font-size: 0.88em;
+  color: var(--muted);
+}
+.prose section[data-footnotes] h2 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.prose sup {
+  line-height: 0;
+}
+
+/* Cursor-sync marker */
+.prose .active-source {
+  background: var(--accent-soft);
+  box-shadow: -0.5em 0 0 var(--accent-soft);
+  border-radius: 3px;
+}
+
+/* Code block header */
+.prose .code-block {
+  margin: 0 0 1.1em;
+  background: var(--code-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.prose .code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+.prose .code-copy {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity 120ms ease;
+}
+.prose .code-block:hover .code-copy,
+.prose .code-copy:focus-visible {
+  opacity: 1;
+}
+.prose .code-block pre {
+  margin: 0;
+  background: none;
+  border-radius: 0;
+}
+
+/* Callouts */
+.prose .callout {
+  --c: var(--accent);
+  margin: 0 0 1.1em;
+  padding: 0.8em 1em;
+  border-left: 3px solid var(--c);
+  border-radius: 0 6px 6px 0;
+  background: color-mix(in srgb, var(--c) 9%, transparent);
+}
+.prose .callout-note {
+  --c: var(--callout-note);
+}
+.prose .callout-tip {
+  --c: var(--callout-tip);
+}
+.prose .callout-important {
+  --c: var(--callout-important);
+}
+.prose .callout-warning {
+  --c: var(--callout-warning);
+}
+.prose .callout-caution {
+  --c: var(--callout-caution);
+}
+.prose .callout-title {
+  font-weight: 600;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c);
+  margin-bottom: 0.35em;
+}
+.prose .callout-body > :last-child {
+  margin-bottom: 0;
+}
+
+/* Math */
+.prose .math-block {
+  margin: 0 0 1.1em;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.prose .katex-display {
+  margin: 0;
+}
+
+/* Mermaid */
+.prose .mermaid-diagram {
+  margin: 0 0 1.1em;
+  text-align: center;
+  overflow-x: auto;
+}
+.prose .mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+.prose pre.mermaid-invalid {
+  outline: 1px dashed var(--callout-caution);
+  outline-offset: 3px;
+}

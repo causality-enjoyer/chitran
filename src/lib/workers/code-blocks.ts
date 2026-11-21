@@ -149,7 +149,7 @@ export const highlightBlocks: Plugin<[], Root> = () => async (tree) => {
 
   for (const { parent, index, pre, code } of hits) {
     const lang = langOf(code).toLowerCase();
-    if (lang === "mermaid") continue; // its own renderer
+    if (lang === "mermaid" || lang === "math") continue; // its own renderer
 
     const source = textOf(code).replace(/\n$/, "");
     let shown: Element = pre; // fallback: the plain block

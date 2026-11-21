@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { convertFileSrc } from "@tauri-apps/api/core";
 	import { dirname } from "@tauri-apps/api/path";
+	import { onMount } from "svelte";
 	let {
 		html,
 		cursorLine,
@@ -85,6 +86,26 @@
 			best.scrollIntoView({ block: "nearest" });
 		}
 	});
+
+	onMount(() => {
+		async function onClick(e: MouseEvent) {
+			const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+				".code-copy",
+			);
+			if (!btn) return;
+			const text =
+				btn.closest(".code-block")?.querySelector("pre")?.textContent ?? "";
+			try {
+				await navigator.clipboard.writeText(text);
+				btn.textContent = "Copied";
+				setTimeout(() => (btn.textContent = "Copy"), 1200);
+			} catch (e) {
+				console.error("Copy failed:", e);
+			}
+		}
+		el?.addEventListener("click", onClick);
+		return () => el?.removeEventListener("click", onClick);
+	});
 </script>
 
 <div class="preview" bind:this={el}>
@@ -106,14 +127,17 @@
 	{@html} content isn't scobed by Svelte, so everything inside uses :global
 	*/
 	.prose {
-		max-width: 68ch;
-		margin: 0 auto;
-		font-size: 1rem;
-		font-family: var(--font-prose);
-		line-height: 1.7;
-		color: var(--fg);
-		overflow-wrap: break-word;
-		hyphens: auto;
+		--shiki-foreground: var(--fg);
+		--shiki-background: transparent;
+		--shiki-token-comment: var(--muted);
+		--shiki-token-keyword: var(--accent);
+		--shiki-token-string: var(--syn-string);
+		--shiki-token-string-expression: var(--syn-string);
+		--shiki-token-function: var(--syn-function);
+		--shiki-token-constant: var(--syn-constant);
+		--shiki-token-parameter: var(--syn-param);
+		--shiki-token-punctuation: var(--muted);
+		--shiki-token-link: var(--accent);
 	}
 	.prose :global(> :first-child) {
 		margin-top: 0;
@@ -309,5 +333,41 @@
 		background: var(--accent-soft);
 		box-shadow: -0.5em 0 0 var(--accent-soft);
 		border-radius: 3px;
+	}
+
+	.prose :global(.code-block) {
+		margin: 0 0 1.1em;
+		background: var(--code-bg);
+		border-radius: 8px;
+		overflow: hidden;
+	}
+	.prose :global(.code-header) {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.3rem 0.8rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--muted);
+		border-bottom: 1px solid var(--border);
+		user-select: none;
+	}
+	.prose :global(.code-copy) {
+		font: inherit;
+		color: inherit;
+		background: none;
+		border: none;
+		cursor: pointer;
+		opacity: 0.3;
+		transition: opacity 120ms ease;
+	}
+	.prose :global(.code-block:hover .code-copy),
+	.prose :global(.code-copy:focus-visible) {
+		opacity: 1;
+	}
+	.prose :global(.code-block pre) {
+		margin: 0;
+		background: none;
+		border-radius: 0;
 	}
 </style>

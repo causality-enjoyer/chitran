@@ -25,8 +25,9 @@
 		window.addEventListener("keydown", onkeydown, true);
 		return () => window.removeEventListener("keydown", onkeydown, true);
 	});
-	onMount(() => {
-		void config.load();
+	onMount(async () => {
+		await config.load();
+		renderer.loadGrammars(await config.grammars());
 	});
 </script>
 

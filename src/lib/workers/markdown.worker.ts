@@ -8,6 +8,7 @@ import rehypeStringify from "rehype-stringify";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { Root as HastRoot, Element } from "hast";
 import { buildSectionTree } from "$lib/section-tree";
+import { addGrammar, highlightBlocks } from "./code-blocks";
 
 const BLOCKS = new Set([
   "p",
@@ -65,17 +66,32 @@ const processor = unified()
   .use(remarkRehype)
   .use(addSourceLines)
   .use(rehypeSanitize, schema)
+  .use(highlightBlocks)
   .use(rehypeStringify);
 
-type Request = { id: number; text: string };
+type Request =
+  | { id: number; text: string }
+  | { type: "grammar"; name: string; json: string };
+
+let queue: Promise<void> = Promise.resolve();
 
 self.onmessage = async (e: MessageEvent<Request>) => {
-  const { id, text } = e.data;
-  try {
-    const file = await processor.process(text);
-    const tree = buildSectionTree(text);
-    self.postMessage({ id, html: String(file), tree });
-  } catch (err) {
-    self.postMessage({ id, error: String(err) });
-  }
+  queue = queue.then(() => handle(e.data));
 };
+
+async function handle(msg: Request) {
+  if ("type" in msg) {
+    addGrammar(msg.name, msg.json);
+    return;
+  }
+  try {
+    const file = await processor.process(msg.text);
+    self.postMessage({
+      id: msg.id,
+      html: String(file),
+      tree: buildSectionTree(msg.text),
+    });
+  } catch (e) {
+    self.postMessage({ id: msg.id, error: String(e) });
+  }
+}
